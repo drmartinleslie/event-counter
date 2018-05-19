@@ -1,12 +1,16 @@
-import EventCounterActor._
+
+import akka.actor.Status
 import akka.actor.{Actor, Props}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
-import scala.util.Try
+import scala.util.{Success, Failure}
+import akka.actor.Timers
 
-class EventCounterActor(initialDataLifespan: Duration) extends Actor {
-  private val eventCounter = new EventCounter(initialDataLifespan)
+class EventCounterActor(initialDataLifespan: Duration) extends Actor with Timers {
+  import EventCounterActor._
+  val eventCounter = new EventCounter(initialDataLifespan)
+  timers.startSingleTimer("prune", Prune, 1.minute)
 
   def receive = {
     case AddEvent =>
@@ -19,8 +23,15 @@ class EventCounterActor(initialDataLifespan: Duration) extends Actor {
       sender ! DataLifespan(eventCounter.dataLifespan)
 
     case GetNumberEvents(duration) =>
-      sender ! NumberEvents(eventCounter.numberEvents(duration))
+      eventCounter.numberEvents(duration) match {
+        case Success(numberEvents) =>
+          sender ! NumberEvents(numberEvents)
+        case Failure(e) =>
+          sender ! Status.Failure(e)
+      }
 
+    case Prune =>
+      eventCounter.prune()
   }
 
 }
@@ -30,8 +41,9 @@ object EventCounterActor {
 
   case object AddEvent
   case class GetNumberEvents(duration: Duration)
-  case class NumberEvents(result: Try[Int])
+  case class NumberEvents(value: Int)
   case class SetDataLifespan(newLifeSpan: Duration)
   case object GetDataLifespan
   case class DataLifespan(value: Duration)
+  case object Prune
 }
