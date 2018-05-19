@@ -1,9 +1,8 @@
 package cloud.leslie.eventcounter
 
-import akka.actor.{Actor, Props, Status, Timers}
+import akka.actor.{Actor, Props, Timers}
 
 import scala.concurrent.duration.{Duration, _}
-import scala.util.{Failure, Success}
 
 class EventCounterActor(initialDataLifespan: Duration) extends Actor with Timers {
   import EventCounterActor._
@@ -21,12 +20,7 @@ class EventCounterActor(initialDataLifespan: Duration) extends Actor with Timers
       sender ! DataLifespan(eventCounter.dataLifespan)
 
     case GetNumberEvents(duration) =>
-      eventCounter.numberEvents(duration) match {
-        case Success(numberEvents) =>
-          sender ! NumberEvents(numberEvents)
-        case Failure(e) =>
-          sender ! Status.Failure(e)
-      }
+      sender ! NumberEvents(eventCounter.numberEvents(duration))
 
     case Prune =>
       eventCounter.prune()

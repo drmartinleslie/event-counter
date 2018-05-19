@@ -1,7 +1,6 @@
 package cloud.leslie.eventcounter
 
 import scala.concurrent.duration.{Duration, _}
-import scala.util.{Failure, Success, Try}
 
 // Not thread-safe
 class EventCounter(private var _dataLifespan: Duration = 5.minutes) {
@@ -12,14 +11,14 @@ class EventCounter(private var _dataLifespan: Duration = 5.minutes) {
     eventTimestamps :+= System.currentTimeMillis()
   }
 
-  def numberEvents(duration: Duration): Try[Int] = {
+  def numberEvents(duration: Duration): Int = {
     if (duration > _dataLifespan) {
-      Failure(new IllegalArgumentException("Cannot request longer duration than dataLifespan"))
+      throw new IllegalArgumentException("Cannot request longer duration than dataLifespan")
     } else {
       prune()
       val cutoffTime = System.currentTimeMillis() - duration.toMillis
       val count = eventTimestamps.dropWhile(_ < cutoffTime).size
-      Success(count)
+      count
     }
   }
 
