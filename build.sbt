@@ -1,4 +1,5 @@
-name := "EventCounter"
+organization := "cloud.leslie"
+name := "event-counter"
 version := "1.0"
 scalaVersion := "2.12.6"
 

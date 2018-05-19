@@ -1,5 +1,6 @@
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration._
+package cloud.leslie.eventcounter
+
+import scala.concurrent.duration.{Duration, _}
 import scala.util.{Failure, Success, Try}
 
 // Not thread-safe

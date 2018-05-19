@@ -1,11 +1,9 @@
+package cloud.leslie.eventcounter
 
-import akka.actor.Status
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, Props, Status, Timers}
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration._
-import scala.util.{Success, Failure}
-import akka.actor.Timers
+import scala.concurrent.duration.{Duration, _}
+import scala.util.{Failure, Success}
 
 class EventCounterActor(initialDataLifespan: Duration) extends Actor with Timers {
   import EventCounterActor._

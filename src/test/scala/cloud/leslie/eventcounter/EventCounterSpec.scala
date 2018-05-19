@@ -1,10 +1,12 @@
+package cloud.leslie.eventcounter
+
+import org.scalatest.TryValues._
 import org.scalatest._
 
 import scala.concurrent.duration._
-import org.scalatest.TryValues._
 
 class EventCounterSpec extends FlatSpec with Matchers {
-  "EventCounter" should "return 0 events when initialized" in {
+  "cloud.leslie.eventcounter.EventCounter" should "return 0 events when initialized" in {
     val eventCounter = new EventCounter()
     eventCounter.numberEvents(1.minute).success.value shouldBe 0
   }
