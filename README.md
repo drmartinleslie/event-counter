@@ -36,11 +36,11 @@ Example usage:
 import cloud.leslie.eventcounter._
 import concurrent.scala.duration._
 
-val eventCounter = new EventCounter()
+val eventCounter = new EventCounter(4.minutes) // the dataLifespan, defaults to 5 minutes if not included
 eventCounter.addEvent()
 eventCounter.addEvent()
-val result = eventCounter.numberEvents(1.minute)
-println(s"$numEvents events in last minute")
+val result = eventCounter.numberEvents(1.minute) // count events in last minute
+println(s"$result events in last minute")
 ```
 
 One note is that automatic pruning of data older than `dataLifespan` will only occur when addEvent or eventCounter are called. If you want to manually prune (for example if you stop calling the counter and want to reduce its memory usage) you can call `eventCounter.prune()`
@@ -70,12 +70,12 @@ eventCounterActor ! AddEvent
 val result = (eventCounterActor ? GetNumberEvents(1.minutes)).mapTo[NumberEvents]
 
 result.onComplete {
-case Success(NumberEvents(value)) =>
-  println(s"There were $value events in the last 1 minutes")
-  system.terminate()
-case Failure(e) =>
-  e.printStackTrace()
-  system.terminate()
+  case Success(NumberEvents(value)) =>
+    println(s"There were $value events in the last 1 minutes")
+    system.terminate()
+  case Failure(e) =>
+    e.printStackTrace()
+    system.terminate()
 }
 ```
 
@@ -83,6 +83,6 @@ EventCounterActor never requires manual pruning.
 
 ## The Data Lifespan
 
-EventCounter has a variable `dataLifespan` that can be set in the constructor and altered later. Data older than that duration will be pruned whenever eventCounter is used. If this variable is set then data will be pruned based on this new value.
+EventCounter has a variable `dataLifespan` that can be set in the constructor and/or altered later. Data older than that duration will be pruned whenever eventCounter is used. When this variable is altered the data will be pruned immediately based on this new value.
 
 This variable also can be accessed through EventCounterActor via the messages `GetDataLifespan` and `SetDataLifespan`.

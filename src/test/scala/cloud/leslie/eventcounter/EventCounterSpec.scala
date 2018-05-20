@@ -5,7 +5,7 @@ import EventCounter._
 import scala.concurrent.duration._
 
 class EventCounterSpec extends FlatSpec with Matchers {
-  "cloud.leslie.eventcounter.EventCounter" should "return 0 events when initialized" in {
+  "EventCounter" should "return 0 events when initialized" in {
     val eventCounter = new EventCounter()
     eventCounter.numberEvents(1.minute) shouldBe 0
   }
