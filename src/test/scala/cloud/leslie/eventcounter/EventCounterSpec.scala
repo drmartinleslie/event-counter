@@ -1,6 +1,6 @@
 package cloud.leslie.eventcounter
-
 import org.scalatest._
+import EventCounter._
 
 import scala.concurrent.duration._
 
@@ -31,4 +31,17 @@ class EventCounterSpec extends FlatSpec with Matchers {
     val result = intercept[IllegalArgumentException] { eventCounter.numberEvents(1.minute) }
     result.getMessage shouldBe "Cannot request longer duration than dataLifespan"
   }
+
+  it should "respect an altered dataLifespan" in {
+    val eventCounter = new EventCounter(2.seconds)
+    eventCounter.dataLifespan = 5.minutes
+    noException should be thrownBy { eventCounter.numberEvents(1.minute) }
+  }
+
+  "indexOfFirstElementAtOrAboveCutoff" should "return correct index" in {
+    val s = Vector(1, 2, 3, 4)
+    val result = indexOfFirstElementAtOrAboveCutoff(s, 3)
+    result shouldBe 2
+  }
+
 }
