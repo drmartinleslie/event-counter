@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
 
 ```
 
-## Usage
+## Basic Usage
 
 There are two different classes you can use to count events.
 
@@ -80,3 +80,9 @@ case Failure(e) =>
 ```
 
 EventCounterActor never requires manual pruning.
+
+## The Data Lifespan
+
+EventCounter has a variable `dataLifespan` that can be set in the constructor and altered later. Data older than that duration will be pruned whenever eventCounter is used. If this variable is set then data will be pruned based on this new value.
+
+This variable also can be accessed through EventCounterActor via the messages `GetDataLifespan` and `SetDataLifespan`.

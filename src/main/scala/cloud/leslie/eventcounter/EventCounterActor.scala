@@ -4,16 +4,25 @@ import akka.actor.{Actor, Props, Timers}
 
 import scala.concurrent.duration._
 
+// A wrapper around EventCounter, allowing threadsafe access. Also has automatic pruning.
 class EventCounterActor(initialDataLifespan: FiniteDuration) extends Actor with Timers {
   import EventCounterActor._
   val eventCounter = new EventCounter(initialDataLifespan)
-  val TimerKey = "Prune"
 
   def receive = {
     case AddEvent =>
       eventCounter.addEvent()
-      if (!timers.isTimerActive(TimerKey)) {
-        timers.startSingleTimer(TimerKey, Prune, eventCounter.dataLifespan)
+      // Pruning strategy: whenever an event is added, prune it dataLifespan later.
+      // If there is already a pruning timer, then when that prune occurs, if there
+      // is still events in the counter, we will start another pruning timer.
+      if (!timers.isTimerActive(PruneTimerKey)) {
+        timers.startSingleTimer(PruneTimerKey, Prune, eventCounter.dataLifespan)
+      }
+
+    case Prune =>
+      eventCounter.prune()
+      if (!eventCounter.isEmpty && !timers.isTimerActive(PruneTimerKey)) {
+        timers.startSingleTimer(PruneTimerKey, Prune, eventCounter.dataLifespan)
       }
 
     case SetDataLifespan(newLifespan) =>
@@ -25,17 +34,15 @@ class EventCounterActor(initialDataLifespan: FiniteDuration) extends Actor with 
     case GetNumberEvents(duration) =>
       sender ! NumberEvents(eventCounter.numberEvents(duration))
 
-    case Prune =>
-      eventCounter.prune()
-      if (!eventCounter.isEmpty && !timers.isTimerActive(TimerKey)) {
-        timers.startSingleTimer(TimerKey, Prune, eventCounter.dataLifespan)
-      }
+
   }
 
 }
 
 object EventCounterActor {
   def props(dataLifespan: FiniteDuration = 5.minutes): Props = Props(classOf[EventCounterActor], dataLifespan)
+
+  val PruneTimerKey = "Prune"
 
   case object AddEvent
   case class GetNumberEvents(duration: FiniteDuration)
